@@ -5,7 +5,7 @@ import pickle  # Used to save/load the maze
 
 # Settings
 CELL_SIZE = 15
-GRID_SIZE = (51, 51)  # Maze size (must be odd)
+GRID_SIZE = (51, 51)
 SCREEN_SIZE = (GRID_SIZE[0] * CELL_SIZE, GRID_SIZE[1] * CELL_SIZE)
 
 # Colors

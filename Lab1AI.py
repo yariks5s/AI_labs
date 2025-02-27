@@ -10,9 +10,6 @@ GRID_COLOR = (30, 30, 30)  # Grid lines
 
 class CellularAutomaton:
     def __init__(self, cols, rows, cell_size):
-        """
-        Initializes the grid and parameters.
-        """
         self.cols = cols
         self.rows = rows
         self.cell_size = cell_size
@@ -21,47 +18,32 @@ class CellularAutomaton:
         self.generate_random_grid()
 
     def generate_random_grid(self):
-        """
-        Generates a random starting configuration.
-        """
         self.grid = np.random.choice([0, 1], size=(self.rows, self.cols), p=[0.85, 0.15])
         self.history = []
 
     def apply_preset(self, preset):
-        """
-        Loads a predefined pattern.
-        """
         self.grid.fill(0)
         start_x = (self.cols - len(preset[0])) // 2
         start_y = (self.rows - len(preset)) // 2
         for i, row in enumerate(preset):
             for j, value in enumerate(row):
-                self.grid[start_y + i, start_x + j] = value
+                self.grid[(start_y + i) % self.rows, (start_x + j) % self.cols] = value
         self.history = []
 
     def count_live_neighbors(self, x, y):
-        """
-        Counts the number of live neighbors for a given cell.
-        """
         offsets = [(-1, -1), (-1, 0), (-1, 1),
                    (0, -1),         (0, 1),
                    (1, -1), (1, 0), (1, 1)]
         
-        count = sum(self.grid[x + dx, y + dy] 
-                    for dx, dy in offsets 
-                    if 0 <= x + dx < self.rows and 0 <= y + dy < self.cols)
+        count = sum(self.grid[(x + dx) % self.rows, (y + dy) % self.cols] for dx, dy in offsets)
         return count
 
     def update_grid(self):
-        """
-        Updates the grid based on the rules of Conway's Game of Life.
-        """
         new_state = np.zeros_like(self.grid)
 
         for x in range(self.rows):
             for y in range(self.cols):
                 neighbors = self.count_live_neighbors(x, y)
-                
                 if self.grid[x, y] == 1:
                     if 2 <= neighbors <= 3:  
                         new_state[x, y] = 1  # Stays alive
@@ -72,13 +54,9 @@ class CellularAutomaton:
         self.history.append(self.grid.copy())
         if len(self.history) > 10:
             self.history.pop(0)
-
         self.grid = new_state
 
     def check_state(self):
-        """
-        Determines if the grid has reached a stable, extinct, or oscillating state.
-        """
         if np.sum(self.grid) == 0:
             return "Extinct"
         if len(self.history) > 1 and np.array_equal(self.grid, self.history[-2]):
@@ -88,16 +66,12 @@ class CellularAutomaton:
         return "Evolving"
 
     def draw(self, screen):
-        """
-        Draws the current grid state.
-        """
         for x in range(self.rows):
             for y in range(self.cols):
                 rect = (y * self.cell_size, x * self.cell_size, self.cell_size - 1, self.cell_size - 1)
                 color = CELL_ALIVE if self.grid[x, y] == 1 else CELL_DEAD
                 pygame.draw.rect(screen, color, rect)
 
-        # Draw grid lines
         for x in range(0, self.cols * self.cell_size, self.cell_size):
             pygame.draw.line(screen, GRID_COLOR, (x, 0), (x, self.rows * self.cell_size))
         for y in range(0, self.rows * self.cell_size, self.cell_size):
@@ -145,7 +119,6 @@ def run_simulation():
         if not paused:
             sim.update_grid()
 
-        # Display the current state
         state_text = sim.check_state()
         font = pygame.font.SysFont(None, 30)
         text_surface = font.render(f"State: {state_text}", True, (255, 255, 255))
@@ -158,4 +131,3 @@ def run_simulation():
 
 if __name__ == '__main__':
     run_simulation()
-    
